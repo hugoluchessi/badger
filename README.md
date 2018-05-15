@@ -48,24 +48,75 @@ The requirements are simple:
 Build a mux that implements the requirements above
 
 ## How does it work?
+#### Yes it is a whole server... I'll work on more simple examples later (promisse)
 
 ``` golang
-// Firstly we need to initialize the mux
-mux = mux.NewMux()
+package main
 
-// route grouping
-routerv1 := mux.AddRouter("v1")
-routerv1.Get("products", ProductsGetV1Handler)
-routerv1.Post("product", ProductsPostV1Handler)
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"net/http"
 
-routerv2 := mux.AddRouter("v2")
-routerv2.Get("products", ProductsGetV2Handler)
-routerv2.Post("product", ProductsPostV2Handler)
+	"github.com/hugoluchessi/badger"
+	"go.uber.org/zap"
+)
 
-// Using different middlewares on different groups
-routerv1.Use(AuthenticationMiddlewareV1)
-routerv2.Use(AuthenticationMiddlewareV2)
+func main() {
+	// Create new Mux
+	mux := badger.NewMux()
 
-http.ListenAndServe(":8080", mux)
+	// Create new router group
+	router1 := mux.AddRouter("v1")
+
+	// Adds an handler for route someget
+	router1.Get("someget", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(res, "Hello, I'm router1, accessed by url %s.", req.URL.Path[1:])
+	}))
+
+	// Create another router group
+	router2 := mux.AddRouter("v2")
+
+	// Adds an handler for route someget
+	router2.Get("someget", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(res, "Hello, I'm router2, also accessed by url %s, and using transaction id %d.", req.URL.Path[1:], req.Context().Value("TransactionId"))
+	}))
+
+	// Example logger uber-zap(https://github.com/uber-go/zap)
+	logger := zap.NewExample()
+	defer logger.Sync()
+
+	// Define a middleware used by router 1
+	router1.Use(func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			logger.Info("Started")
+			h.ServeHTTP(rw, req)
+			logger.Info("Finished")
+		})
+	})
+
+	// Define another middleware used by router 1
+	router2.Use(func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			ctx := req.Context()
+			// This number could be a header value
+			ctx = context.WithValue(ctx, "TransactionId", rand.Uint64())
+			req = req.WithContext(ctx)
+			h.ServeHTTP(rw, req)
+		})
+	})
+
+	// Define a middleware used by router 2
+	router2.Use(func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			logger.Info("Comecou middleware 2")
+			h.ServeHTTP(rw, req)
+			logger.Info("Terminou middleware 2")
+		})
+	})
+
+	http.ListenAndServe(":8080", mux)
+}
 
 ```

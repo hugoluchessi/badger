@@ -6,11 +6,11 @@ After looking into another options like [gorilla/mux](https://github.com/gorilla
 
 Gorila has plenty of middlewares that respect the [http.Handler](https://golang.org/pkg/net/http/#Handler) interface, which makes easy to find and develop new middlewares and custom handlers, but it lacks context as parameter.
 
-### But they have Context before it was cool
+### But they had Context before it was cool
 Yes, they have a [context](https://github.com/gorilla/context), but this context relies on a global variable shared between all routines which causes unnecessary concurrency.
 
 #### Route declaration
-Really, in what world this:
+Really... in what world this:
 
 ``` golang
 r.HandleFunc("/products", ProductsHandler).

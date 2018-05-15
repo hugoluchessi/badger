@@ -81,11 +81,11 @@ func main() {
 	// Adds an handler for route someget
 	router2.Get("someget", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(
-      res,
-      "Hello, I'm router2, also accessed by url %s, and using transaction id %d.",
-      req.URL.Path[1:],
-      req.Context().Value("TransactionId"),
-    )
+			res,
+			"Hello, I'm router2, also accessed by url %s, and using transaction id %d.",
+			req.URL.Path[1:],
+			req.Context().Value("TransactionId"),
+		)
 	}))
 
 	// Example logger uber-zap(https://github.com/uber-go/zap)

@@ -110,13 +110,32 @@ func main() {
 	// Define a middleware used by router 2
 	router2.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			logger.Info("Comecou middleware 2")
+			logger.Info("Started middleware 2")
 			h.ServeHTTP(rw, req)
-			logger.Info("Terminou middleware 2")
+			logger.Info("Finished middleware 2")
 		})
 	})
 
 	http.ListenAndServe(":8080", mux)
 }
 
+```
+
+On the terminal, use curl to access the routes:
+
+```
+curl localhost:8080/v1/someget   
+Hello, I'm router1, accessed by url v1/someget.
+
+curl localhost:8080/v2/someget
+=> Hello, I'm router2, also accessed by url v2/someget, and using transaction id 5577006791947779410.
+```
+
+Yes! It works, and the transaction ID correctly arrived the handler function. Also there is log messages:
+
+```
+{"level":"info","msg":"Started"}
+{"level":"info","msg":"Finished"}
+{"level":"info","msg":"Started middleware 2"}
+{"level":"info","msg":"Finished middleware 2"}
 ```

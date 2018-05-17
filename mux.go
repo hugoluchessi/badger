@@ -1,8 +1,10 @@
 package badger
 
 import (
+	"fmt"
 	"net/http"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/julienschmidt/httprouter"
@@ -31,6 +33,7 @@ func (mux *Mux) AddRouter(path string) *Router {
 }
 
 func (mux *Mux) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	req.URL.Path = normalizeRoutePath(req.URL.Path)
 	mux.getMainRouterInstance().ServeHTTP(res, req)
 }
 
@@ -71,7 +74,7 @@ func (r *Router) buildRoutes() []Route {
 
 	for _, route := range r.routes {
 		// Ensure path starts with /
-		p := path.Join("/", r.basepath, route.path)
+		p := normalizeRoutePath(r.basepath, route.path)
 		builtroute := Route{route.method, p, route.handler}
 
 		for _, middleware := range r.middlewares {
@@ -82,4 +85,9 @@ func (r *Router) buildRoutes() []Route {
 	}
 
 	return builtroutes
+}
+
+func normalizeRoutePath(p ...string) string {
+	rp := strings.Join(p, "/")
+	return fmt.Sprintf("%s/", path.Join("/", rp))
 }

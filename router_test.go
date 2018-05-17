@@ -42,6 +42,25 @@ func AssertRoute(t *testing.T, route Route, emethod string, epath string, ehandl
 	}
 }
 
+func TestDelete(t *testing.T) {
+	basepath := ""
+	router := NewRouter(basepath)
+	method := "DELETE"
+	path := "/somePath"
+	handlerheaderkey := "some key"
+	handlerheadervalue := "some value"
+
+	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
+
+	router.Delete(path, handler)
+
+	if len(router.routes) == 0 {
+		t.Error("Test failed, there should be one route on router.")
+	}
+
+	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+}
+
 func TestGet(t *testing.T) {
 	basepath := ""
 	router := NewRouter(basepath)
@@ -61,6 +80,63 @@ func TestGet(t *testing.T) {
 	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
 }
 
+func TestHead(t *testing.T) {
+	basepath := ""
+	router := NewRouter(basepath)
+	method := "HEAD"
+	path := "/somePath"
+	handlerheaderkey := "some key"
+	handlerheadervalue := "some value"
+
+	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
+
+	router.Head(path, handler)
+
+	if len(router.routes) == 0 {
+		t.Error("Test failed, there should be one route on router.")
+	}
+
+	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+}
+
+func TestOptions(t *testing.T) {
+	basepath := ""
+	router := NewRouter(basepath)
+	method := "OPTIONS"
+	path := "/somePath"
+	handlerheaderkey := "some key"
+	handlerheadervalue := "some value"
+
+	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
+
+	router.Options(path, handler)
+
+	if len(router.routes) == 0 {
+		t.Error("Test failed, there should be one route on router.")
+	}
+
+	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+}
+
+func TestPatch(t *testing.T) {
+	basepath := ""
+	router := NewRouter(basepath)
+	method := "PATCH"
+	path := "/somePath"
+	handlerheaderkey := "some key"
+	handlerheadervalue := "some value"
+
+	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
+
+	router.Patch(path, handler)
+
+	if len(router.routes) == 0 {
+		t.Error("Test failed, there should be one route on router.")
+	}
+
+	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+}
+
 func TestPost(t *testing.T) {
 	basepath := ""
 	router := NewRouter(basepath)
@@ -72,6 +148,25 @@ func TestPost(t *testing.T) {
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
 
 	router.Post(path, handler)
+
+	if len(router.routes) == 0 {
+		t.Error("Test failed, there should be one route on router.")
+	}
+
+	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+}
+
+func TestPut(t *testing.T) {
+	basepath := ""
+	router := NewRouter(basepath)
+	method := "PUT"
+	path := "/somePath"
+	handlerheaderkey := "some key"
+	handlerheadervalue := "some value"
+
+	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
+
+	router.Put(path, handler)
 
 	if len(router.routes) == 0 {
 		t.Error("Test failed, there should be one route on router.")

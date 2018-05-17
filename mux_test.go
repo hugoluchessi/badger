@@ -305,3 +305,20 @@ func TestServeHTTPTwoRoutersOneRouteOneMiddleware(t *testing.T) {
 	AssertHeader(t, res, MiddlewareHeaderKey2, HeadersExpectedValue)
 	AssertHeader(t, res, RouteHeaderKey2, HeadersExpectedValue)
 }
+
+func TestServeHTTPWithParams(t *testing.T) {
+	mux := NewMux()
+	routepath := path.Join("/", RouterBasePath1, RoutePath1)
+	router := mux.AddRouter("")
+
+	router.Get(routepath, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add(RouteHeaderKey1, HeadersExpectedValue)
+	}))
+
+	//buffer := bytes.NewBufferString("some body value")
+
+	req, _ := http.NewRequest(GET, path.Join(routepath, "?test=param1&test2=param2"), nil)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+}

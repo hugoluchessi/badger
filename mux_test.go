@@ -311,14 +311,16 @@ func TestServeHTTPWithParams(t *testing.T) {
 	routepath := path.Join("/", RouterBasePath1, RoutePath1)
 	router := mux.AddRouter("")
 
-	router.Get(routepath, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Add(RouteHeaderKey1, HeadersExpectedValue)
+	router.Get(path.Join(routepath, "/:testparam"), http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		params := GetRouteParamsFromRequest(r)
+		testparam, _ := params.GetString("testparam")
+
+		if testparam != "test" {
+			t.Errorf("Test failed, invalid param, expected '%s' got '%s'.", testparam, "test")
+		}
 	}))
 
-	//buffer := bytes.NewBufferString("some body value")
-
-	req, _ := http.NewRequest(GET, path.Join(routepath, "?test=param1&test2=param2"), nil)
+	req, _ := http.NewRequest(GET, path.Join(routepath, "/test", "?test=param1&test2=param2"), nil)
 	res := httptest.NewRecorder()
 	mux.ServeHTTP(res, req)
-
 }

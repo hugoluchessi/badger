@@ -1,6 +1,7 @@
 package badger
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path"
@@ -60,7 +61,12 @@ func (mux *Mux) createMainRouterInstance() {
 				route.path,
 				// FIXME: Ignore params for now
 				HandleFunc(func(h http.Handler) httprouter.Handle {
-					return func(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+					return func(res http.ResponseWriter, req *http.Request, rps httprouter.Params) {
+						typed := CreateRouteParams(rps)
+						ctx := req.Context()
+						ctx = context.WithValue(ctx, RouteParamsKey, typed)
+						req = req.WithContext(ctx)
+
 						h.ServeHTTP(res, req)
 					}
 				})(route.handler),

@@ -32,15 +32,16 @@ func main() {
 	// Handler got GET Products
 	router.Get("products", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		products := YourProductsDAL.all
-		fmt.Fprintf(res, toJson(production))
+		fmt.Fprintf(res, toJson(products))
 	}))
 
 	// Handler got GET Products
 	router.Get("products/:id", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		rp := Get
+		rp := badger.GetRouteParamsFromRequest(req)
+		id, _ := rp.GetInt("id")
 
-		products := YourProductsDAL.where("id = %d", )
-		fmt.Fprintf(res, toJson(production))
+		products := YourProductsDAL.where("id = %d", id)
+		fmt.Fprintf(res, toJson(products))
 	}))
 
 	// Define a middleware used by router 1

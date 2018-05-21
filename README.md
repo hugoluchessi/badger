@@ -2,65 +2,24 @@
 Simple Router multiplexer for web api's based on [httprouter](https://github.com/julienschmidt/httprouter) adding the feature to add Middlewares to specific group of routes.
 
 ## Why a new Router?
-After looking into another options like [gorilla/mux](https://github.com/gorilla/mux) and [Gin](https://github.com/gin-gonic/gin) I realized both had advantages and restrictions.
+Please see [the reason here](https://gist.github.com/hugoluchessi/db89f6f0fae0aced6251153bb97ee485).
 
-Gorila has plenty of middlewares that respect the [http.Handler](https://golang.org/pkg/net/http/#Handler) interface, which makes easy to find and develop new middlewares and custom handlers, but it lacks context as parameter.
-
-### But they had Context before it was cool
-Yes, they have a [context](https://github.com/gorilla/context), but this context relies on a global variable shared between all routines which causes unnecessary concurrency.
-
-#### Route declaration
-Really... in what world this:
-
-``` golang
-r.HandleFunc("/products", ProductsHandler).
-  Methods("GET")
-```
-
-is easier to use than this:
-
-``` golang
-r.GET("/products", func(c *gin.Context) {
-	// DO work
-})
-```
-
-Kidding aside, Gorilla has plenty more of built in functions regarding parameter validations within mux, url scheme matching and other things, which will be not considered here as it is not a requirement.
-
-### Ok, then Gin's context parameters is the solution and route grouping is the solution
-Yes, but with some drawbacks.
-
-Aside being based on [httprouter](https://github.com/julienschmidt/httprouter) which makes [Gin](https://github.com/gin-gonic/gin) 30x faster than [gorilla/mux](https://github.com/gorilla/mux) it has a route grouping which you can configure some routes to have some middlewares.
-
-#### Perfect! Wait... not so fast
-Gin's implementation of context is pretty close to what I was looking for, it [returns a pointer Context object](https://github.com/gin-gonic/gin/blob/master/gin.go#L320) using [sync.Pool.Get()](https://golang.org/pkg/sync/#Pool) method and then the interface to handle request uses only this context, which is a all in one object.
-
-It contains custom ResponseWriter interface, custom query params interface, JSON writer, and many other funcionalities, it is almost magical.
-
-## Now what?
-How can we get the best of the 2 worlds?
-
-The requirements are simple:
-* Be compliant to [Golang/net](https://golang.org/pkg/net/http) interfaces to be easier to find new middlewares (and use gorilla's)
-* Have Context parameter (not being global or magical)
-
-# The challenge
-Build a mux that implements the requirements above
+## Features
+* Fast and versatile routing
+* Easy to use route grouping
+* Middlewares
+* 100% stdlib interfaces
 
 ## How does it work?
-#### Yes it is a whole server... I'll work on more simple examples later (promisse)
+### Simple server
 
 ``` golang
 package main
 
 import (
-	"context"
-	"fmt"
-	"math/rand"
 	"net/http"
 
 	"github.com/hugoluchessi/badger"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -68,56 +27,28 @@ func main() {
 	mux := badger.NewMux()
 
 	// Create new router group
-	router1 := mux.AddRouter("v1")
+	router := mux.AddRouter("v1")
 
-	// Adds an handler for route someget
-	router1.Get("someget", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(res, "Hello, I'm router1, accessed by url %s.", req.URL.Path[1:])
+	// Handler got GET Products
+	router.Get("products", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		products := YourProductsDAL.all
+		fmt.Fprintf(res, toJson(production))
 	}))
 
-	// Create another router group
-	router2 := mux.AddRouter("v2")
+	// Handler got GET Products
+	router.Get("products/:id", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		rp := Get
 
-	// Adds an handler for route someget
-	router2.Get("someget", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(
-			res,
-			"Hello, I'm router2, also accessed by url %s, and using transaction id %d.",
-			req.URL.Path[1:],
-			req.Context().Value("TransactionId"),
-		)
+		products := YourProductsDAL.where("id = %d", )
+		fmt.Fprintf(res, toJson(production))
 	}))
-
-	// Example logger uber-zap(https://github.com/uber-go/zap)
-	logger := zap.NewExample()
-	defer logger.Sync()
 
 	// Define a middleware used by router 1
-	router1.Use(func(h http.Handler) http.Handler {
+	router.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			logger.Info("Started")
 			h.ServeHTTP(rw, req)
 			logger.Info("Finished")
-		})
-	})
-
-	// Define another middleware used by router 1
-	router2.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			ctx := req.Context()
-			// This number could be a header value
-			ctx = context.WithValue(ctx, "TransactionId", rand.Uint64())
-			req = req.WithContext(ctx)
-			h.ServeHTTP(rw, req)
-		})
-	})
-
-	// Define a middleware used by router 2
-	router2.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			logger.Info("Started middleware 2")
-			h.ServeHTTP(rw, req)
-			logger.Info("Finished middleware 2")
 		})
 	})
 
@@ -126,21 +57,27 @@ func main() {
 
 ```
 
-On the terminal, use curl to access the routes:
+## Performance
+[Here](https://github.com/hugoluchessi/go-http-routing-benchmark) is the project with the benchmark.
 
-```
-curl localhost:8080/v1/someget   
-Hello, I'm router1, accessed by url v1/someget.
-
-curl localhost:8080/v2/someget
-=> Hello, I'm router2, also accessed by url v2/someget, and using transaction id 5577006791947779410.
-```
-
-Yes! It works, and the transaction ID correctly arrived the handler function. Also there is log messages:
-
-```
-{"level":"info","msg":"Started"}
-{"level":"info","msg":"Finished"}
-{"level":"info","msg":"Started middleware 2"}
-{"level":"info","msg":"Finished middleware 2"}
-```
+BenchmarkBadger_Param|1000000|2514 ns/op|944 B/op|13 allocs/op
+BenchmarkGin_Param|20000000|61.7 ns/op|0 B/op|0 allocs/op
+BenchmarkGorillaMux_Param|500000|3263 ns/op|1280 B/op|10 allocs/op
+BenchmarkHttpRouter_Param|20000000|110 ns/op|32 B/op|1 allocs/op
+BenchmarkMartini_Param|300000|5567 ns/op|1072 B/op|10 allocs/op
+BenchmarkBadger_Param5|500000|3267 ns/op|1024 B/op|13 allocs/op
+BenchmarkGin_Param5|20000000|108 ns/op|0 B/op|0 allocs/op
+BenchmarkGorillaMux_Param5|300000|4732 ns/op|1344 B/op|10 allocs/op
+BenchmarkHttpRouter_Param5|5000000|321 ns/op|160 B/op|1 allocs/op
+BenchmarkMartini_Param5|200000|6797 ns/op|1232 B/op|11 allocs/op
+BenchmarkAce_Param20|1000000|1581 ns/op|640 B/op|1 allocs/op
+BenchmarkBadger_Param20|500000|3768 ns/op|1104 B/op|13 allocs/op
+BenchmarkGin_Param20|5000000|277 ns/op|0 B/op|0 allocs/op
+BenchmarkGorillaMux_Param20|100000|12494 ns/op|3452 B/op|12 allocs/op
+BenchmarkHttpRouter_Param20|1000000|1528 ns/op|640 B/op|1 allocs/op
+BenchmarkMartini_Param20|100000|12697 ns/op|3596 B/op|13 allocs/op
+BenchmarkBadger_ParamWrite|1000000|2866 ns/op|944 B/op|13 allocs/op
+BenchmarkGin_ParamWrite|10000000|163 ns/op|0 B/op|0 allocs/op
+BenchmarkGorillaMux_ParamWrite|500000|3246 ns/op|1280 B/op|10 allocs/op
+BenchmarkHttpRouter_ParamWrite|10000000|135 ns/op|32 B/op|1 allocs/op
+BenchmarkMartini_ParamWrite|200000|6270 ns/op|1176 B/op|14 allocs/op

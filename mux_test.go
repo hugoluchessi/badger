@@ -324,3 +324,73 @@ func TestServeHTTPWithParams(t *testing.T) {
 	res := httptest.NewRecorder()
 	mux.ServeHTTP(res, req)
 }
+
+func TestBuildRoutesWithNotFoundHandler(t *testing.T) {
+	mux := NewMux()
+	routepath := path.Join("/", RouterBasePath1, RoutePath1)
+	router := mux.AddRouter("")
+
+	router.Get(routepath, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		_ = ""
+	}))
+
+	headerkey := "NotFound"
+	headervalue := "nope"
+
+	mux.NotFound = http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Add(headerkey, headervalue)
+	})
+
+	req, _ := http.NewRequest(GET, "no_route", nil)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	AssertHeader(t, res, headerkey, headervalue)
+}
+
+func TestBuildRoutesWitMethodNotAllowedHandler(t *testing.T) {
+	mux := NewMux()
+	routepath := path.Join(RouterBasePath1, RoutePath1)
+	router := mux.AddRouter("")
+
+	router.Get(routepath, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		_ = ""
+	}))
+
+	headerkey := "MethodNotAllowed"
+	headervalue := "nope"
+
+	mux.MethodNotAllowed = http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Add(headerkey, headervalue)
+	})
+
+	req, _ := http.NewRequest("PATCH", routepath, nil)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	AssertHeader(t, res, headerkey, headervalue)
+}
+
+func TestBuildRoutesWitPanicHandler(t *testing.T) {
+	mux := NewMux()
+	routepath := path.Join(RouterBasePath1, RoutePath1)
+	router := mux.AddRouter("")
+
+	headerkey := "Panic"
+	headervalue := "AHHHH"
+
+	router.Get(routepath, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		_ = ""
+		panic(headervalue)
+	}))
+
+	mux.PanicHandler = func(res http.ResponseWriter, req *http.Request, something interface{}) {
+		res.Header().Add(headerkey, something.(string))
+	}
+
+	req, _ := http.NewRequest(GET, routepath, nil)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	AssertHeader(t, res, headerkey, headervalue)
+}

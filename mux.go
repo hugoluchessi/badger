@@ -14,13 +14,16 @@ import (
 type HandleFunc func(http.Handler) httprouter.Handle
 
 type Mux struct {
-	routers    []*Router
-	mainrouter *httprouter.Router
-	lock       sync.RWMutex
+	routers          []*Router
+	mainrouter       *httprouter.Router
+	lock             sync.RWMutex
+	NotFound         http.HandlerFunc
+	MethodNotAllowed http.HandlerFunc
+	PanicHandler     func(http.ResponseWriter, *http.Request, interface{})
 }
 
 func NewMux() *Mux {
-	return &Mux{[]*Router{}, nil, sync.RWMutex{}}
+	return &Mux{[]*Router{}, nil, sync.RWMutex{}, nil, nil, nil}
 }
 
 func (mux *Mux) AddRouter(path string) *Router {
@@ -52,6 +55,18 @@ func (mux *Mux) createMainRouterInstance() {
 
 	mux.mainrouter = httprouter.New()
 
+	if mux.NotFound != nil {
+		mux.mainrouter.NotFound = mux.NotFound
+	}
+
+	if mux.MethodNotAllowed != nil {
+		mux.mainrouter.MethodNotAllowed = mux.MethodNotAllowed
+	}
+
+	if mux.PanicHandler != nil {
+		mux.mainrouter.PanicHandler = mux.PanicHandler
+	}
+
 	for _, router := range mux.routers {
 		routerroutes := router.buildRoutes()
 
@@ -79,7 +94,7 @@ func (r *Router) buildRoutes() []Route {
 	builtroutes := make([]Route, 0)
 
 	for _, route := range r.routes {
-		// Ensure path starts with /
+		// Ensure path starts and ends with /
 		p := normalizeRoutePath(r.basepath, route.path)
 		builtroute := Route{route.method, p, route.handler}
 

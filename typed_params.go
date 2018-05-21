@@ -1,7 +1,6 @@
 package badger
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -21,7 +20,7 @@ func (t TypedParams) GetString(key string) (string, error) {
 		return val, nil
 	}
 
-	return "", errors.New(fmt.Sprintf(notFoundErrorMessageFormat, key))
+	return "", fmt.Errorf(notFoundErrorMessageFormat, key)
 }
 
 func (t TypedParams) GetInt(key string) (int, error) {

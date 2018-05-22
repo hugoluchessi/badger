@@ -8,13 +8,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type MockHttpRouterParam struct {
-	Key   string
-	Value string
-}
-
-type MockHttpRouterParams []MockHttpRouterParam
-
 func TestCreateRouteParams(t *testing.T) {
 	key := "map"
 	value := "mapvalue!"

@@ -11,8 +11,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type HandleFunc func(http.Handler) httprouter.Handle
+type handleFunc func(http.Handler) httprouter.Handle
 
+// Mux is the main structure to define you routes, it has helper functions
+// to build all your web routing and middleware chain.
 type Mux struct {
 	routers          []*Router
 	mainrouter       *httprouter.Router
@@ -22,10 +24,12 @@ type Mux struct {
 	PanicHandler     func(http.ResponseWriter, *http.Request, interface{})
 }
 
+// NewMux returns a pointer to a newly created mux
 func NewMux() *Mux {
 	return &Mux{[]*Router{}, nil, sync.RWMutex{}, nil, nil, nil}
 }
 
+// AddRouter creates a new router with the given base route and returns it
 func (mux *Mux) AddRouter(path string) *Router {
 	mux.lock.Lock()
 	defer mux.lock.Unlock()
@@ -75,7 +79,7 @@ func (mux *Mux) createMainRouterInstance() {
 				route.method,
 				route.path,
 				// FIXME: Ignore params for now
-				HandleFunc(func(h http.Handler) httprouter.Handle {
+				handleFunc(func(h http.Handler) httprouter.Handle {
 					return func(res http.ResponseWriter, req *http.Request, rps httprouter.Params) {
 						typed := CreateRouteParams(rps)
 						ctx := req.Context()

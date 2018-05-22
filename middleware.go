@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// MiddlewareFunc is the interface needed to send as you Use middlewares
+// in your router.
 type MiddlewareFunc func(http.Handler) http.Handler
 
 type middleware struct {

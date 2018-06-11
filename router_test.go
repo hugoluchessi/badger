@@ -288,7 +288,7 @@ func TestUse(t *testing.T) {
 		}
 	})
 
-	builthandler := router.middlewares[0].BuildHandler(h)
+	builthandler := router.middlewares[0](h)
 
 	builthandler.ServeHTTP(res, req)
 
@@ -336,8 +336,8 @@ func TestUseMultiple(t *testing.T) {
 		}
 	})
 
-	builthandler := router.middlewares[0].BuildHandler(h)
-	builthandler = router.middlewares[1].BuildHandler(builthandler)
+	builthandler := router.middlewares[0](h)
+	builthandler = router.middlewares[1](builthandler)
 
 	builthandler.ServeHTTP(res, req)
 

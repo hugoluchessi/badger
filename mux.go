@@ -103,7 +103,7 @@ func (r *Router) buildRoutes() []Route {
 		builtroute := Route{route.method, p, route.handler}
 
 		for _, middleware := range r.middlewares {
-			builtroute.handler = middleware.BuildHandler(builtroute.handler)
+			builtroute.handler = middleware(builtroute.handler)
 		}
 
 		builtroutes = append(builtroutes, builtroute)

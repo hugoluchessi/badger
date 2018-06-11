@@ -5,18 +5,20 @@ import (
 	"sync"
 )
 
+type middleware func(http.Handler) http.Handler
+
 // Router is responsible for gathering all routing information and to build all
 // handler chaining
 type Router struct {
 	basepath    string
-	middlewares []*middleware
+	middlewares []middleware
 	routes      []Route
 	lock        sync.RWMutex
 }
 
 // NewRouter returns a pointer to a newly created router
 func NewRouter(path string) *Router {
-	return &Router{path, []*middleware{}, []Route{}, sync.RWMutex{}}
+	return &Router{path, []middleware{}, []Route{}, sync.RWMutex{}}
 }
 
 // Delete creates a new handler for DELETE method in the router
@@ -64,11 +66,9 @@ func (r *Router) Handle(method string, path string, handler http.Handler) {
 }
 
 // Use creates a new middleware for the given functions
-func (r *Router) Use(mwf MiddlewareFunc) {
+func (r *Router) Use(mw middleware) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-
-	mw := &middleware{mwf}
 
 	r.middlewares = append(r.middlewares, mw)
 }

@@ -1,10 +1,12 @@
-package badger
+package badger_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"path"
 	"testing"
+
+	"github.com/hugoluchessi/badger"
 )
 
 const GET = "GET"
@@ -28,7 +30,7 @@ func AssertHeader(t *testing.T, res http.ResponseWriter, key string, expectedval
 }
 
 func TestNewMux(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 
 	if mux == nil {
 		t.Error("Test failed, mux must not be nil")
@@ -37,12 +39,8 @@ func TestNewMux(t *testing.T) {
 
 func TestAddRouter(t *testing.T) {
 	path := "root"
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(path)
-
-	if len(mux.routers) != 1 {
-		t.Error("Test failed, there must be one router on mux.")
-	}
 
 	if router == nil {
 		t.Error("Test failed, router must not be nil")
@@ -50,13 +48,9 @@ func TestAddRouter(t *testing.T) {
 }
 
 func TestAddMutlipleRouters(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 	router2 := mux.AddRouter(RouterBasePath2)
-
-	if len(mux.routers) != 2 {
-		t.Error("Test failed, there must be two routers on mux.")
-	}
 
 	if router == nil {
 		t.Error("Test failed, router must not be nil")
@@ -71,7 +65,7 @@ func TestServeHTTPNoRouters(t *testing.T) {
 	req, _ := http.NewRequest(GET, RouterBasePath1, nil)
 	res := httptest.NewRecorder()
 
-	mux := NewMux()
+	mux := badger.NewMux()
 
 	mux.ServeHTTP(res, req)
 }
@@ -80,7 +74,7 @@ func TestServeHTTPOneRouterNoRoutesNoMiddlewares(t *testing.T) {
 	req, _ := http.NewRequest(GET, RouterBasePath1, nil)
 	res := httptest.NewRecorder()
 
-	mux := NewMux()
+	mux := badger.NewMux()
 	_ = mux.AddRouter(RouterBasePath1)
 
 	mux.ServeHTTP(res, req)
@@ -90,7 +84,7 @@ func TestServeHTTPOneRouterOneRouteNoMiddlewares(t *testing.T) {
 	req, _ := http.NewRequest(GET, path.Join("/", RouterBasePath1, RoutePath1), nil)
 	res := httptest.NewRecorder()
 
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Add(RouteHeaderKey1, HeadersExpectedValue)
@@ -105,7 +99,7 @@ func TestServeHTTPOneRouterOneRouteOneMiddleware(t *testing.T) {
 	req, _ := http.NewRequest(GET, path.Join("/", RouterBasePath1, RoutePath1), nil)
 	res := httptest.NewRecorder()
 
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -129,7 +123,7 @@ func TestServeHTTPOneRouterOneRouteTwoMiddlewares(t *testing.T) {
 	req, _ := http.NewRequest(GET, path.Join("/", RouterBasePath1, RoutePath1), nil)
 	res := httptest.NewRecorder()
 
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -163,7 +157,7 @@ func TestServeHTTPOneRouterOneRouteTwoMiddlewares(t *testing.T) {
 }
 
 func TestServeHTTPOneRouterTwoRouteNoMiddleware(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -192,7 +186,7 @@ func FuncWithMid2(rw http.ResponseWriter, r *http.Request) {
 }
 
 func TestServeHTTPOneRouterTwoRouteOneMiddleware(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -227,7 +221,7 @@ func TestServeHTTPOneRouterTwoRouteOneMiddleware(t *testing.T) {
 }
 
 func TestServeHTTPOneRouterOneRouteTwoMiddleware(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	router := mux.AddRouter(RouterBasePath1)
 
 	router.Get(RoutePath1, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -259,7 +253,7 @@ func TestServeHTTPOneRouterOneRouteTwoMiddleware(t *testing.T) {
 }
 
 func TestServeHTTPTwoRoutersOneRouteOneMiddleware(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	router1 := mux.AddRouter(RouterBasePath1)
 	router2 := mux.AddRouter(RouterBasePath2)
 
@@ -307,12 +301,12 @@ func TestServeHTTPTwoRoutersOneRouteOneMiddleware(t *testing.T) {
 }
 
 func TestServeHTTPWithParams(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	routepath := path.Join("/", RouterBasePath1, RoutePath1)
 	router := mux.AddRouter("")
 
 	router.Get(path.Join(routepath, "/:testparam"), http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		params := GetRouteParamsFromRequest(r)
+		params := badger.GetRouteParamsFromRequest(r)
 		testparam, _ := params.GetString("testparam")
 
 		if testparam != "test" {
@@ -326,7 +320,7 @@ func TestServeHTTPWithParams(t *testing.T) {
 }
 
 func TestBuildRoutesWithNotFoundHandler(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	routepath := path.Join("/", RouterBasePath1, RoutePath1)
 	router := mux.AddRouter("")
 
@@ -349,7 +343,7 @@ func TestBuildRoutesWithNotFoundHandler(t *testing.T) {
 }
 
 func TestBuildRoutesWitMethodNotAllowedHandler(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	routepath := path.Join(RouterBasePath1, RoutePath1)
 	router := mux.AddRouter("")
 
@@ -372,7 +366,7 @@ func TestBuildRoutesWitMethodNotAllowedHandler(t *testing.T) {
 }
 
 func TestBuildRoutesWitPanicHandler(t *testing.T) {
-	mux := NewMux()
+	mux := badger.NewMux()
 	routepath := path.Join(RouterBasePath1, RoutePath1)
 	router := mux.AddRouter("")
 

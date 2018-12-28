@@ -1,10 +1,11 @@
-package badger
+package badger_test
 
 import (
 	"context"
 	"net/http"
 	"testing"
 
+	"github.com/hugoluchessi/badger"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -15,7 +16,7 @@ func TestCreateRouteParams(t *testing.T) {
 	params := httprouter.Params{}
 	params = append(params, httprouter.Param{Key: key, Value: value})
 
-	typedmap := CreateRouteParams(params)
+	typedmap := badger.CreateRouteParams(params)
 
 	rvalue, err := typedmap.GetString(key)
 
@@ -34,7 +35,7 @@ func TestCreateRouteParamsWithNoParams(t *testing.T) {
 	params := httprouter.Params{}
 	params = append(params, httprouter.Param{})
 
-	typedmap := CreateRouteParams(params)
+	typedmap := badger.CreateRouteParams(params)
 
 	rvalue, err := typedmap.GetString(key)
 
@@ -54,7 +55,7 @@ func TestCreateRouteIntParams(t *testing.T) {
 	params := httprouter.Params{}
 	params = append(params, httprouter.Param{Key: key, Value: value})
 
-	typedmap := CreateRouteParams(params)
+	typedmap := badger.CreateRouteParams(params)
 
 	rvalue, err := typedmap.GetInt(key)
 
@@ -75,13 +76,13 @@ func TestGetRouteParamsFromRequest(t *testing.T) {
 		key: value,
 	}
 
-	typed := CreateTypedParams(dict)
+	typed := badger.CreateTypedParams(dict)
 	req, _ := http.NewRequest("GET", "nowhere", nil)
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, RouteParamsKey, typed)
+	ctx = context.WithValue(ctx, badger.RouteParamsKey, typed)
 	req = req.WithContext(ctx)
 
-	dictexpected := GetRouteParamsFromRequest(req)
+	dictexpected := badger.GetRouteParamsFromRequest(req)
 
 	if rvalue, _ := dictexpected.GetString(key); rvalue == "" {
 		t.Errorf("Test failed, expected value to be '%s' got '%s'.", value, rvalue)

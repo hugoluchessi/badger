@@ -1,14 +1,16 @@
-package badger
+package badger_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/hugoluchessi/badger"
 )
 
 func TestNewRouter(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	router := badger.NewRouter(basepath)
 
 	if router == nil {
 		t.Error("Test failed, router should not be nil")
@@ -21,19 +23,11 @@ func AssertHandlerFunc(ehandlerheaderkey string, ehandlerheadervalue string) fun
 	}
 }
 
-func AssertRoute(t *testing.T, route Route, emethod string, epath string, ehandlerheaderkey string, ehandlerheadervalue string) {
+func AssertRoute(t *testing.T, mux *badger.Mux, emethod string, epath string, ehandlerheaderkey string, ehandlerheadervalue string) {
 	req, _ := http.NewRequest(emethod, epath, nil)
 	res := httptest.NewRecorder()
 
-	if route.method != emethod {
-		t.Errorf("Test failed, wrong route method, got '%s' expected '%s'.", route.method, emethod)
-	}
-
-	if route.path != epath {
-		t.Errorf("Test failed, wrong route path, got '%s' expected '%s'.", route.path, epath)
-	}
-
-	route.handler.ServeHTTP(res, req)
+	mux.ServeHTTP(res, req)
 
 	handlervalue := res.Header().Get(ehandlerheaderkey)
 
@@ -44,141 +38,122 @@ func AssertRoute(t *testing.T, route Route, emethod string, epath string, ehandl
 
 func TestDelete(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "DELETE"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Delete(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestGet(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "GET"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Get(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestHead(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "HEAD"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Head(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestOptions(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "OPTIONS"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Options(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestPatch(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "PATCH"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Patch(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestPost(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "POST"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Post(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestPut(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "PUT"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
 	handler := http.HandlerFunc(AssertHandlerFunc(handlerheaderkey, handlerheadervalue))
-
 	router.Put(path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestHandle(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
-	method := "SOMEMETHOD"
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
+	method := "DELETE"
 	path := "/somePath"
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
@@ -187,16 +162,14 @@ func TestHandle(t *testing.T) {
 
 	router.Handle(method, path, handler)
 
-	if len(router.routes) == 0 {
-		t.Error("Test failed, there should be one route on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
 }
 
 func TestGetTwice(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	method := "GET"
 	path := "/somePath"
 	path2 := "/somePath2"
@@ -208,17 +181,15 @@ func TestGetTwice(t *testing.T) {
 	router.Get(path, handler)
 	router.Get(path2, handler)
 
-	if len(router.routes) < 2 {
-		t.Error("Test failed, there should be two routes on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method, path, handlerheaderkey, handlerheadervalue)
-	AssertRoute(t, router.routes[1], method, path2, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method, path2, handlerheaderkey, handlerheadervalue)
 }
 
 func TestMultipleHandlers(t *testing.T) {
 	basepath := ""
-	router := NewRouter(basepath)
+	mux := badger.NewMux()
+	router := mux.AddRouter(basepath)
+
 	handlerheaderkey := "some key"
 	handlerheadervalue := "some value"
 
@@ -237,13 +208,9 @@ func TestMultipleHandlers(t *testing.T) {
 	router.Post(path2, handler)
 	router.Handle(method3, path3, handler)
 
-	if len(router.routes) < 3 {
-		t.Error("Test failed, there should be three routes on router.")
-	}
-
-	AssertRoute(t, router.routes[0], method1, path1, handlerheaderkey, handlerheadervalue)
-	AssertRoute(t, router.routes[1], method2, path2, handlerheaderkey, handlerheadervalue)
-	AssertRoute(t, router.routes[2], method3, path3, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method1, path1, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method2, path2, handlerheaderkey, handlerheadervalue)
+	AssertRoute(t, mux, method3, path3, handlerheaderkey, handlerheadervalue)
 }
 
 func MyTestMiddleware(h http.Handler) http.Handler {
@@ -263,19 +230,12 @@ func MyTestMiddleware2(h http.Handler) http.Handler {
 }
 
 func TestUse(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/health-check", nil)
-	res := httptest.NewRecorder()
+	path := "/health-check"
+	method := "GET"
+	mux := badger.NewMux()
+	router := mux.AddRouter("")
 
-	basepath := ""
-	router := NewRouter(basepath)
-
-	router.Use(MyTestMiddleware)
-
-	if len(router.middlewares) < 1 {
-		t.Error("Test failed, there should be one middleware on router.")
-	}
-
-	h := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+	handler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		header1 := res.Header().Get("X-Middleware")
 		header2 := res.Header().Get("X-Middleware-2")
 
@@ -288,9 +248,13 @@ func TestUse(t *testing.T) {
 		}
 	})
 
-	builthandler := router.middlewares[0](h)
+	router.Get(path, handler)
+	router.Use(MyTestMiddleware)
 
-	builthandler.ServeHTTP(res, req)
+	req, _ := http.NewRequest(method, path, nil)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
 
 	header2 := res.Header().Get("X-Middleware-2")
 
@@ -300,20 +264,12 @@ func TestUse(t *testing.T) {
 }
 
 func TestUseMultiple(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/health-check", nil)
-	res := httptest.NewRecorder()
+	path := "/health-check"
+	method := "GET"
+	mux := badger.NewMux()
+	router := mux.AddRouter("")
 
-	basepath := ""
-	router := NewRouter(basepath)
-
-	router.Use(MyTestMiddleware)
-	router.Use(MyTestMiddleware2)
-
-	if len(router.middlewares) < 2 {
-		t.Error("Test failed, there should be two middlewares on router.")
-	}
-
-	h := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+	handler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		mw1header1 := res.Header().Get("X-Middleware")
 		mw2header1 := res.Header().Get("X-Middleware2")
 		mw1header2 := res.Header().Get("X-Middleware-2")
@@ -336,10 +292,14 @@ func TestUseMultiple(t *testing.T) {
 		}
 	})
 
-	builthandler := router.middlewares[0](h)
-	builthandler = router.middlewares[1](builthandler)
+	router.Get(path, handler)
+	router.Use(MyTestMiddleware)
+	router.Use(MyTestMiddleware2)
 
-	builthandler.ServeHTTP(res, req)
+	req, _ := http.NewRequest(method, path, nil)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
 
 	mw1header2 := res.Header().Get("X-Middleware-2")
 	mw2header2 := res.Header().Get("X-Middleware2-2")

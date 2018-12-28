@@ -1,7 +1,9 @@
-package badger
+package badger_test
 
 import (
 	"testing"
+
+	"github.com/hugoluchessi/badger"
 )
 
 func TestGetString(t *testing.T) {
@@ -10,7 +12,7 @@ func TestGetString(t *testing.T) {
 
 	dict := map[string]string{key: value}
 
-	typedmap := CreateTypedParams(dict)
+	typedmap := badger.CreateTypedParams(dict)
 
 	rvalue, err := typedmap.GetString(key)
 
@@ -29,7 +31,7 @@ func TestGetInexistingStringKey(t *testing.T) {
 
 	dict := map[string]string{key: value}
 
-	typedmap := CreateTypedParams(dict)
+	typedmap := badger.CreateTypedParams(dict)
 
 	rvalue, err := typedmap.GetString("someotherkey")
 
@@ -48,7 +50,7 @@ func TestGetint(t *testing.T) {
 
 	dict := map[string]string{key: value}
 
-	typedmap := CreateTypedParams(dict)
+	typedmap := badger.CreateTypedParams(dict)
 
 	rvalue, err := typedmap.GetInt(key)
 
@@ -67,7 +69,7 @@ func TestGetInexistingIntKey(t *testing.T) {
 
 	dict := map[string]string{key: value}
 
-	typedmap := CreateTypedParams(dict)
+	typedmap := badger.CreateTypedParams(dict)
 
 	rvalue, err := typedmap.GetInt("someotherkey")
 

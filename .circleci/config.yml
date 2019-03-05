@@ -5,11 +5,11 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
-    environment:
-      GO111MODULE: "ON"
+      - image: golang:1.12.0-alpine3.9
     working_directory: /go/src/github.com/hugoluchessi/badger
     steps:
+      - run:
+        command: echo 'export GO111MODULE="ON"' >> $BASH_ENV
       - checkout
       - run: go mod download
       - run: go test -v ./...

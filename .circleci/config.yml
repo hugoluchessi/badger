@@ -10,5 +10,5 @@ jobs:
     working_directory: /go/src/github.com/hugoluchessi/badger
     steps:
       - checkout
-      - run: /go/bin/dep ensure
+      - run: go mod download
       - run: go test -v ./...

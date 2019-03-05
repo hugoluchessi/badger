@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: hugo1987br/golang:1.10.2-dep-alpine3.7
+      - image: golang:1.12.0-alpine3.9
       
     working_directory: /go/src/github.com/hugoluchessi/badger
     steps:

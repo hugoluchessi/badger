@@ -1,6 +1,6 @@
 [![CircleCI](https://circleci.com/gh/hugoluchessi/badger/tree/master.svg?style=shield)](https://circleci.com/gh/hugoluchessi/badger/tree/master)
 # Badger
-Simple Router multiplexer for web api's based on [httprouter](https://github.com/julienschmidt/httprouter) adding the feature to add Middlewares to specific group of routes.
+Simple Route multiplexer for web api's based on [httprouter](https://github.com/julienschmidt/httprouter) adding the feature to add Middlewares to specific group of routes.
 
 ## Why a new Router?
 Please see [the reason here](https://gist.github.com/hugoluchessi/db89f6f0fae0aced6251153bb97ee485).

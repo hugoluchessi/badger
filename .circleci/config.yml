@@ -5,9 +5,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: hugo1987br/go-build:1.12
+      - image: hugo1987br/go-build:1.14
     working_directory: /go/src/github.com/hugoluchessi/badger
     steps:
       - checkout
       - run: go mod download
+      - run: go vet
       - run: go test -v ./...
